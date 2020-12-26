@@ -30,7 +30,13 @@
 // Generates a localStorage adapter.
 // It's a bit verbose, but takes less characters than writing it manually.
 const storageApi = {};
-['set', 'get', 'remove'].forEach(m => (storageApi[m] = async (k, v) => localStorage[m + 'Item'](k, v)));
+['set', 'get', 'remove'].forEach(m => {
+	if (typeof window !== 'undefined') {
+		return storageApi[m] = async (k, v) => localStorage[m + 'Item'](k, v)
+	} else {
+		return null
+	}
+});
 
 /**
  * Encapsulates authentication flow logic.
@@ -62,9 +68,9 @@ export default class Auth {
 					});
 		});
 
-		// Because this library is also used in React Native, outside the browser as well,
-		// we need to check if this environment supports `addEventListener` on the window.
-		'addEventListener' in window &&
+		// Because this library is also used in React Native, outside the browser and on 
+		// server side as well, we need to check window and `window.addEventListener`
+		window && 'addEventListener' in window &&
 			window.addEventListener('storage', e => {
 				// This code will run if localStorage for this user
 				// data was updated from a different browser window.
