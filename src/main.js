@@ -57,20 +57,22 @@ export default class Auth {
 			listeners: []
 		});
 
-		this.storage.get(this.sKey('User')).then(user => {
-			this.setState(JSON.parse(user), false);
-			if (this.user)
-				this.refreshIdToken()
-					.then(() => this.fetchProfile())
-					.catch(e => {
-						if (e.message === 'TOKEN_EXPIRED' || e.message === 'INVALID_ID_TOKEN' || e.message === 'USER_NOT_FOUND') return this.signOut();
-						throw e;
-					});
-		});
+		if (this.storage && this.storage.get) {
+			this.storage.get(this.sKey('User')).then(user => {
+				this.setState(JSON.parse(user), false);
+				if (this.user)
+					this.refreshIdToken()
+						.then(() => this.fetchProfile())
+						.catch(e => {
+							if (e.message === 'TOKEN_EXPIRED' || e.message === 'INVALID_ID_TOKEN' || e.message === 'USER_NOT_FOUND') return this.signOut();
+							throw e;
+						});
+			});
+		}
 
 		// Because this library is also used in React Native, outside the browser and on 
 		// server side as well, we need to check window and `window.addEventListener`
-		window && 'addEventListener' in window &&
+		(typeof window !== "undefined") && 'addEventListener' in window &&
 			window.addEventListener('storage', e => {
 				// This code will run if localStorage for this user
 				// data was updated from a different browser window.
